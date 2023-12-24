@@ -1,9 +1,10 @@
 import { BadRequestException, UseFilters } from '@nestjs/common';
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { RegisterResponse } from './types/user.types';
 import { RegisterDto } from './dto/user.dto';
 import { Response } from 'express';
+import { User } from './entities/user.entity';
 
 @Resolver('User')
 // @UseFilters
@@ -19,8 +20,13 @@ export class UsersResolver {
       throw new BadRequestException('Please fill all the fields');
     }
 
-    const user = await this.userService.register(registerDto);
+    const user = await this.userService.register(registerDto, context.res);
 
     return { user };
+  }
+
+  @Query(() => [User])
+  async getUsers() {
+    return this.userService.getUsers();
   }
 }
