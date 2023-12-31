@@ -14,7 +14,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
           secure: true,
           auth: {
             user: config.get('SMTP_MAIL'),
-            password: config.get('SMTP_PASSWORD'),
+            pass: config.get('SMTP_PASSWORD'),
           },
         },
         defaults: {

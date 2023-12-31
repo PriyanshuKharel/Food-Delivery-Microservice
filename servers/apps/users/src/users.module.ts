@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { UsersResolver } from './users.resolver';
 import { EmailModule } from './email/email.module';
+import { EmailService } from './email/email.service';
 
 @Module({
   imports: [
@@ -31,6 +32,8 @@ import { EmailModule } from './email/email.module';
     JwtService,
     PrismaService,
     UsersResolver,
+    //This I added as it was showing me error
+    EmailService,
   ],
 })
 export class UsersModule {}

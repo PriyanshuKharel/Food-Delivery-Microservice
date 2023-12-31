@@ -1,10 +1,16 @@
-import { BadRequestException, UseFilters } from '@nestjs/common';
+import { BadRequestException, UseFilters, UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse } from './types/user.types';
-import { RegisterDto } from './dto/user.dto';
+import {
+  ActivationResponse,
+  LoginResponse,
+  LogoutResponse,
+  RegisterResponse,
+} from './types/user.types';
+import { ActivationDto, RegisterDto } from './dto/user.dto';
 import { Response } from 'express';
 import { User } from './entities/user.entity';
+import { AuthGuard } from './guards/auth.guard';
 
 @Resolver('User')
 // @UseFilters
@@ -13,16 +19,61 @@ export class UsersResolver {
 
   @Mutation(() => RegisterResponse)
   async register(
-    @Args('registerInput') registerDto: RegisterDto,
+    @Args('registerDto') registerDto: RegisterDto,
     @Context() context: { res: Response },
   ): Promise<RegisterResponse> {
     if (!registerDto.name || !registerDto.email || !registerDto.password) {
       throw new BadRequestException('Please fill all the fields');
     }
 
-    const user = await this.userService.register(registerDto, context.res);
+    const { activation_token } = await this.userService.register(
+      registerDto,
+      context.res,
+    );
 
-    return { user };
+    // const user = await this.userService.register(registerDto, context.res);
+
+    return { activation_token };
+  }
+
+  @Mutation(() => ActivationResponse)
+  async activateUser(
+    @Args('activationDto') activationDto: ActivationDto,
+    @Context() context: { res: Response },
+  ): Promise<ActivationResponse> {
+    return await this.userService.activateUser(activationDto, context.res);
+  }
+
+  @Mutation(() => LoginResponse)
+  async Login(
+    @Args('email') email: string,
+    @Args('password') password: string,
+  ): Promise<LoginResponse> {
+    return await this.userService.Login({ email, password });
+  }
+
+  // @Mutation(() => RegisterResponse)
+  // async activateUser(
+  //   @Args('activationInput') activationDto: ActivationDto,
+  //   @Context() context: { res: Response },
+  // ): Promise<RegisterResponse> {
+  //   const user = await this.userService.activateUser(
+  //     activationDto,
+  //     context.res,
+  //   );
+  //   return { user };
+  // }
+
+  @Query(() => LoginResponse)
+  @UseGuards(AuthGuard)
+  async getLoggedInUser(@Context() context: { req: Request }) {
+    return await this.userService.getLoggedInUser(context.req);
+  }
+
+  @Query(() => LogoutResponse)
+  @UseGuards(AuthGuard)
+  async logOutUser(@Context() context: { req: Request }) {
+    return await this.userService.Logout(context.req);
   }
 
   @Query(() => [User])
